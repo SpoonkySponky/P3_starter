@@ -16,7 +16,6 @@
 #include "model/replay_client.h"
 #include "model/scripted_client.h"
 #include "tools/builtin_tools.h"
-//this is a comment
 
 #include <filesystem>
 #include <iostream>

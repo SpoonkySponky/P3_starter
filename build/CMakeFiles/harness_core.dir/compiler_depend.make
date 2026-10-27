@@ -2059,6 +2059,7 @@ CMakeFiles/harness_core.dir/src/tools/calculator_eval.cpp.o: /mnt/c/Users/malco/
   /usr/include/c++/15/bits/concept_check.h \
   /usr/include/c++/15/bits/cpp_type_traits.h \
   /usr/include/c++/15/bits/cxxabi_forced.h \
+  /usr/include/c++/15/bits/deque.tcc \
   /usr/include/c++/15/bits/exception.h \
   /usr/include/c++/15/bits/exception_defines.h \
   /usr/include/c++/15/bits/functexcept.h \
@@ -2081,11 +2082,13 @@ CMakeFiles/harness_core.dir/src/tools/calculator_eval.cpp.o: /mnt/c/Users/malco/
   /usr/include/c++/15/bits/stl_algobase.h \
   /usr/include/c++/15/bits/stl_bvector.h \
   /usr/include/c++/15/bits/stl_construct.h \
+  /usr/include/c++/15/bits/stl_deque.h \
   /usr/include/c++/15/bits/stl_function.h \
   /usr/include/c++/15/bits/stl_iterator.h \
   /usr/include/c++/15/bits/stl_iterator_base_funcs.h \
   /usr/include/c++/15/bits/stl_iterator_base_types.h \
   /usr/include/c++/15/bits/stl_pair.h \
+  /usr/include/c++/15/bits/stl_stack.h \
   /usr/include/c++/15/bits/stl_uninitialized.h \
   /usr/include/c++/15/bits/stl_vector.h \
   /usr/include/c++/15/bits/string_view.tcc \
@@ -2105,6 +2108,7 @@ CMakeFiles/harness_core.dir/src/tools/calculator_eval.cpp.o: /mnt/c/Users/malco/
   /usr/include/c++/15/cwchar \
   /usr/include/c++/15/debug/assertions.h \
   /usr/include/c++/15/debug/debug.h \
+  /usr/include/c++/15/deque \
   /usr/include/c++/15/ext/alloc_traits.h \
   /usr/include/c++/15/ext/numeric_traits.h \
   /usr/include/c++/15/ext/string_conversions.h \
@@ -2113,6 +2117,7 @@ CMakeFiles/harness_core.dir/src/tools/calculator_eval.cpp.o: /mnt/c/Users/malco/
   /usr/include/c++/15/iosfwd \
   /usr/include/c++/15/new \
   /usr/include/c++/15/pstl/pstl_config.h \
+  /usr/include/c++/15/stack \
   /usr/include/c++/15/string \
   /usr/include/c++/15/string_view \
   /usr/include/c++/15/tuple \
@@ -3647,6 +3652,12 @@ CMakeFiles/harness_core.dir/src/tools/workspace_provided.cpp.o: /mnt/c/Users/mal
 
 /mnt/c/Users/malco/Downloads/ECE309Proj3/P3_starter/src/tools/calculator_tokenize.cpp:
 
+/usr/include/c++/15/stack:
+
+/usr/include/c++/15/deque:
+
+/usr/include/c++/15/bits/stl_stack.h:
+
 /mnt/c/Users/malco/Downloads/ECE309Proj3/P3_starter/src/tools/calculator_eval.cpp:
 
 /mnt/c/Users/malco/Downloads/ECE309Proj3/P3_starter/include/tools/file_tools.h:
@@ -3742,6 +3753,8 @@ CMakeFiles/harness_core.dir/src/tools/workspace_provided.cpp.o: /mnt/c/Users/mal
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+
+/usr/include/c++/15/bits/stl_deque.h:
 
 /usr/include/math.h:
 
@@ -4154,6 +4167,8 @@ CMakeFiles/harness_core.dir/src/tools/workspace_provided.cpp.o: /mnt/c/Users/mal
 /usr/include/c++/15/bits/cxxabi_forced.h:
 
 /usr/include/c++/15/compare:
+
+/usr/include/c++/15/bits/deque.tcc:
 
 /usr/include/c++/15/bits/stl_tempbuf.h:
 

@@ -1,6 +1,6 @@
 # Project 3 Design Log
 **Author:** <Malcolm Cormier> · **P2 code used:** <instructor reference>
-**Tools used:** <AI assistants / other tools, and what you used them for>
+**Tools used:** <Claude used for debugging>
 
 <!-- 500–800 words. An argument, not a diary: say what you decided, what
      you rejected, and what evidence backs it up. Delete these comments

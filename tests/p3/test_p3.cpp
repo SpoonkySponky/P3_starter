@@ -104,4 +104,287 @@ TEST(calc_division_by_zero) {
 //   ws_<case>                     REQUIRED: every row of the table in spec §4.4
 //   calc_<case>                   left-to-right, parentheses, negatives
 
+TEST(reg_null_rejected) {
+    ToolRegistry r;
+
+    CHECK(!r.add(nullptr));
+    CHECK(r.size() == 0);
+}
+
+TEST(reg_for_each_visits_each_once) {
+    ToolRegistry r;
+    REQUIRE(r.add(std::make_unique<NamedTool>("alpha")));
+    REQUIRE(r.add(std::make_unique<NamedTool>("beta")));
+    REQUIRE(r.add(std::make_unique<NamedTool>("gamma")));
+
+    int count = 0;
+    r.for_each([&count](const Tool&) {
+        count++;
+    });
+
+    CHECK(count == 3);
+}
+
+TEST(reg_10000_tools) {
+    ToolRegistry r;
+    Tool* first = nullptr;
+
+    for (int i = 0; i < 10000; i++) {
+        std::string name = "tool_" + std::to_string(i);
+        auto tool = std::make_unique<NamedTool>(name);
+
+        if (i == 0) {
+            first = tool.get();
+        }
+
+        REQUIRE(r.add(std::move(tool)));
+        CHECK(r.load_factor() <= 1.0);
+    }
+
+    CHECK(r.size() == 10000);
+    CHECK(r.find("tool_0") == first);
+    CHECK(r.max_probe_length() <= 64);
+
+    for (int i = 0; i < 10000; i++) {
+        std::string name = "tool_" + std::to_string(i);
+        CHECK(r.find(name) != nullptr);
+    }
+
+    std::printf("buckets: %zu\n", r.bucket_count());
+    std::printf("load factor: %f\n", r.load_factor());
+    std::printf("max probe length: %zu\n", r.max_probe_length());
+
+    std::vector<int> counts(r.bucket_count(), 0);
+
+    for (int i = 0; i < 10000; i++) {
+        std::string name = "tool_" + std::to_string(i);
+        std::size_t hash = name[0] + name.size();
+        counts[hash % r.bucket_count()]++;
+    }
+
+    int longest = 0;
+    for (int count : counts) {
+        if (count > longest) {
+            longest = count;
+        }
+    }
+
+    std::printf("weak hash longest chain: %d\n", longest);
+}
+
+TEST(reg_alternative_hash) {
+    ToolRegistry r;
+
+    for (int i = 0; i < 10000; i++) {
+        std::string name = "tool_" + std::to_string(i);
+        REQUIRE(r.add(std::make_unique<NamedTool>(name)));
+    }
+
+    std::vector<int> counts(r.bucket_count(), 0);
+
+    for (int i = 0; i < 10000; i++) {
+        std::string name = "tool_" + std::to_string(i);
+
+        // A simple alternative hash
+        std::size_t hash = name[0] + name.size();
+        counts[hash % r.bucket_count()]++;
+    }
+
+    int longest = 0;
+    for (int count : counts) {
+        if (count > longest) {
+            longest = count;
+        }
+    }
+
+    std::printf("alternative hash longest chain: %d\n", longest);
+    CHECK(longest > 0);
+}
+//WS Tests
+TEST(ws_accepts_normal_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve("notes/todo.txt", &out, &reason));
+    CHECK(out == ws.root() / "notes/todo.txt");
+}
+
+TEST(ws_normalizes_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve("./notes//todo.txt", &out, &reason));
+    CHECK(out == ws.root() / "notes/todo.txt");
+}
+
+TEST(ws_accepts_current_directory) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve(".", &out, &reason));
+    CHECK(out == ws.root());
+}
+
+TEST(ws_normalizes_parent_inside) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve("a/../b", &out, &reason));
+    CHECK(out == ws.root() / "b");
+}
+
+TEST(ws_normalizes_parent_to_root) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve("a/..", &out, &reason));
+    CHECK(out == ws.root());
+}
+
+TEST(ws_accepts_new_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve("new/dir/file.txt", &out, &reason));
+    CHECK(out == ws.root() / "new/dir/file.txt");
+}
+
+TEST(ws_accepts_dots_in_filename) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(ws.resolve("my..notes.txt", &out, &reason));
+    CHECK(out == ws.root() / "my..notes.txt");
+}
+
+TEST(ws_rejects_empty_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(!ws.resolve("", &out, &reason));
+    CHECK(reason == "empty path");
+}
+
+TEST(ws_rejects_nul) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+    std::string path = std::string("notes") + '\0' + "/x";
+
+    CHECK(!ws.resolve(path, &out, &reason));
+}
+
+TEST(ws_rejects_absolute_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(!ws.resolve("/etc/passwd", &out, &reason));
+}
+
+TEST(ws_rejects_dotdot) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(!ws.resolve("..", &out, &reason));
+}
+
+TEST(ws_rejects_parent_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(!ws.resolve("../etc/passwd", &out, &reason));
+}
+
+TEST(ws_rejects_multiple_parent_path) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(!ws.resolve("a/../../b", &out, &reason));
+}
+
+TEST(ws_rejects_path_that_returns_inside) {
+    Workspace ws("test_workspace");
+    fs::path out;
+    std::string reason;
+
+    CHECK(!ws.resolve("notes/../../ws/notes/todo.txt", &out, &reason));
+}
+
+//Calculator Tests
+TEST(calc_left_to_right) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("10 - 4 - 3", &value, &error));
+    CHECK(value == 3);
+}
+
+TEST(calc_division_left_to_right) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("100 / 10 / 5", &value, &error));
+    CHECK(value == 2);
+}
+
+TEST(calc_parentheses) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("(2 + 3) * 4", &value, &error));
+    CHECK(value == 20);
+}
+
+TEST(calc_nested_precedence) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("2 * (3 + 4) - 5", &value, &error));
+    CHECK(value == 9);
+}
+
+TEST(calc_negative_numbers) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("-3 * -3", &value, &error));
+    CHECK(value == 9);
+}
+
+TEST(calc_decimal_result) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("7 / 2", &value, &error));
+    CHECK(value == 3.5);
+}
+
+TEST(calc_extra_expression_one) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("(8 - 2) / 3", &value, &error));
+    CHECK(value == 2);
+}
+
+TEST(calc_extra_expression_two) {
+    double value = 0;
+    std::string error;
+
+    REQUIRE(eval("2 + 3 * (4 - 1)", &value, &error));
+    CHECK(value == 11);
+}
+
 int main(int argc, char** argv) { return mt::run_all(argc, argv); }

@@ -1,26 +1,19 @@
 # Project 3 Design Log
 **Author:** <Malcolm Cormier> · **P2 code used:** <instructor reference>
-**Tools used:** <Claude used for debugging>
+**Tools used:** <Claude used for debugging such as checking logic errors in code and fixing syntax>
 
-<!-- 500–800 words. An argument, not a diary: say what you decided, what
-     you rejected, and what evidence backs it up. Delete these comments
-     before submitting. -->
 
 ## 1. Hash table
-<!-- Chaining or open addressing, and why. Your hash function, load-factor
-     threshold, and resize policy. Paste your 10,000-tool numbers
-     (bucket_count, load_factor, max_probe_length) next to the alternative
-     hash's longest chain. Explain briefly why add() is amortized O(1). -->
+     I chose to implement chaining where each bucket contains a separate vector with the various tool names. Therefore, when multiple names map to the same bucket, they can be stored together when finding a tool. This makes handling collision easier as well. I began my registry with 32 buckets, and it doubles whenever adding another tool would cause the load factor to be larger than 1.0. This helps reduce unnecessary growth while maintaining room to store data. 
+     When I tested the registry with 10,000 tolos, the final bucket count was 164384,with the longest chain having 6 tools, and it had a load factor of 0.610352. This differs from the alternative has function where it produced a longest chain of 9000. This shows that data is distributed evenly in the hash table I implemented verus the alternative has table, making lookup more efficient. 
+     add() is amortized as O(1) because insertion requires finding the bucket and checking its entries, and because of the size doubling it does not need to resize very often. This makes it so the insertion time generally remains constant.  
 
 ## 2. Pointer stability
-<!-- Why does a Tool* returned by find() survive a resize in your design? -->
+My registry stores the tools using a unique_ptr which owns the tool object. The find() function returns a raw pointer. When resizing is used, the unique_ptr objects are moved into new buckets; however, this does not change the tool objects place in memory. Therefore, the tool's original memory address does not change when resize is used.
 
 ## 3. Calculator trace
-<!-- Trace the values and ops stacks for 2 * (3 + 4) - 5, one token at a
-     time, in your own words. -->
-
+My calculator implementation utilizes two stacks: one  for numbers and the other for open parenthesis and operators. In the example 2*(3+4)-5, 2 is read and pushed onto the number stack, the asterisk and parenthesis are read and pushed onto the operator stack respectively. Then 3 is pushed onto the numbers stack, + is pushed onto the operators stack, and 4 is pushed onto the numbers stack. As the closing parenthsis is being read, it performs the addition inside the parenthesis, making 7, and pushes 7 onto the stack while also removing the opening parenthesis. Then, the minus is read, but due to the precendence function, this minus operator has a lower precendence than multiplication, meaning 2*7 is now evaluated as 14 and that 14 gets pushed onto the numbers stack. Now the minus can be pushed onto the operator stack and the 5 can be pushed onto the number stack. Once all of the tokens have been read, the final operation 14-5 is conducted and 9 is returned as the result. 
 ## 4. Errors as values
-<!-- Why do tools, resolve() and calc_evaluate() return errors instead of
-     throwing? When IS an exception the right choice? -->
-
+Error messages are typically used when there are issues that can occur with normal use and can typically be fixed by reporting them instead of crashing the program. For example, if calc_evaluate() returns false, its because the calculator cannot solve the equation due to improper user input, such as division by zero. Similar to resolve(), where, for example, the file path cannot contain null. These issues are typically caused by improper user input and can be simply resolved by stating the problem and retrying the input, whereas, exceptions are used for programming mistakes that cannot be so easily fixed. 
 ## 5. What I would design differently
+I would change how many initial buckets I make during the configuation of the registry. I initially started with 32 buckets because I knew that we would be working with a lot of data, 10,000 test tools. However, there are some scenarios where this would be too large and take up more memory space than needed. It would be nice to start off smaller or even make the size change depending on how much data will be provided.  
